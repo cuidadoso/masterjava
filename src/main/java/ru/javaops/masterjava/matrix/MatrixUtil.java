@@ -11,14 +11,11 @@ import java.util.concurrent.*;
  */
 public class MatrixUtil {
 
-    // TODO implement parallel multiplication matrixA*matrixB
     public static int[][] concurrentMultiply(final int[][] matrixA, final int[][] matrixB, final ExecutorService executor) throws InterruptedException, ExecutionException {
 
         final int matrixSize = matrixA.length;
         final int[][] matrixC = new int[matrixSize][matrixSize];
-
         List<Callable<Boolean>> taskList = new ArrayList<>();
-
         for (int i = 0; i < matrixSize; i++) {
             final int i2 = i;
             for (int j = 0; j < matrixSize; j++) {
@@ -32,14 +29,35 @@ public class MatrixUtil {
                     matrixC[i2][j2] = sum;
                     return true;
                 });
-                /*executor.submit(() ->
+            }
+        }
+        executor.invokeAll(taskList);
+        return matrixC;
+    }
+
+    public static int[][] concurrentMultiplyImproved(final int[][] matrixA, final int[][] matrixB, final ExecutorService executor) throws InterruptedException, ExecutionException {
+
+        final int matrixSize = matrixA.length;
+        final int[][] matrixC = new int[matrixSize][matrixSize];
+        int thatColumn[] = new int[matrixSize];
+        List<Callable<Boolean>> taskList = new ArrayList<>();
+        for (int j = 0; j < matrixSize; j++) {
+            final int j2 = j;
+            for (int k = 0; k < matrixSize; k++) {
+                thatColumn[k] = matrixB[k][j];
+            }
+            for (int i = 0; i < matrixSize; i++) {
+                final int i2 = i;
+                int thisRow[] = matrixA[i];
+                taskList.add(() ->
                 {
                     int sum = 0;
                     for (int k = 0; k < matrixSize; k++) {
-                        sum += matrixA[i2][k] * matrixB[k][j2];
+                        sum += thisRow[k] * thatColumn[k];
                     }
                     matrixC[i2][j2] = sum;
-                });*/
+                    return true;
+                });
             }
         }
         executor.invokeAll(taskList);
