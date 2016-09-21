@@ -19,6 +19,7 @@ public class MainMatrix {
         final int[][] matrixB = MatrixUtil.create(MATRIX_SIZE);
 
         double singleThreadSum = 0.;
+        double singleThreadImprovedSum = 0.;
         double concurrentThreadSum = 0.;
         for (int i = 0; i < 5; i++) {
             long start = System.currentTimeMillis();
@@ -26,6 +27,12 @@ public class MainMatrix {
             double duration = (System.currentTimeMillis() - start) / 1000.;
             out("Single thread time, sec: %.3f", duration);
             singleThreadSum += duration;
+
+            start = System.currentTimeMillis();
+            final int[][] improvedMatrixC = MatrixUtil.singleThreadMultiplyImproved(matrixA, matrixB);
+            duration = (System.currentTimeMillis() - start) / 1000.;
+            out("Single thread improved time, sec: %.3f", duration);
+            singleThreadImprovedSum += duration;
 
             start = System.currentTimeMillis();
             final int[][] concurrentMatrixC = MatrixUtil.concurrentMultiply(matrixA, matrixB, executor);
@@ -40,6 +47,7 @@ public class MainMatrix {
         }
         executor.shutdown();
         out("\nAverage single thread time, sec: %.3f", singleThreadSum / 5.);
+        out("Average single thread improved time, sec: %.3f", singleThreadImprovedSum / 5.);
         out("Average concurrent thread time, sec: %.3f", concurrentThreadSum / 5.);
     }
 
